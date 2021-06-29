@@ -1,0 +1,273 @@
+﻿
+@{
+    ViewBag.Title = "estado";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="row" id="divSearchUser">
+    <div class="row" style="margin-top:2%;">
+        <div class=" col-xs-12">
+            <h3 style=" text-align:center">Buscar Usuario:</h3>
+        </div>
+
+
+
+        <div class="col-sm-3">
+            <p>Buscar por ID:</p>
+            <input type="number" id="txtID" value="" class="form-control" onkeyup="if (event.keyCode == 13) {mSearch()}" />
+
+        </div>
+        <div class="col-sm-3">
+            <p>Buscar por username:</p>
+            <input type="text" id="txtUsername" value="" class="form-control" onkeyup="if (event.keyCode == 13) {mSearch()}" />
+
+        </div>
+        <div class="col-sm-3">
+            <p>Buscar por nombre:</p>
+            <input type="text" id="txtFullname" value="" class="form-control" onkeyup="if (event.keyCode == 13) {mSearch()}" />
+
+        </div>
+        <div class="col-sm-3">
+            <button type="button" class="btn btn-primary btn-lg" style="margin-top:2%" onclick="mSearch()"> <span class="glyphicon glyphicon-search"></span> Buscar</button>
+
+        </div>
+
+
+    </div>
+    <div class="row" style="margin-top:2%; display:none" id="divTable">
+        <table class="table table-bordered table-responsive table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID:</th>
+                    <th>Nombre completo:</th>
+                    <th>Nombre de  usuario:</th>
+                    <th>Acciones:</th>
+                </tr>
+
+            </thead>
+            <tbody id="dtUsers"></tbody>
+
+
+        </table>
+    </div>
+    <div class="row" style="margin-top:2%; display:none" id="divNotFound">
+        <div class="alert alert-danger col-xs-12" style="text-align:center">No se encontro ning&uacute;n usuario.</div>
+
+    </div>
+</div>
+<div class="row" id="divEstadoCuenta" style="display:none">
+
+
+    <div class="row" style="margin-top:2%">
+        <h2 id="fullnameDetails"></h2>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <p id="idUserDetails"></p>
+            <p id="usernameDetails"></p>
+        </div>
+        <div class="col-sm-4">
+            <p id="totalPagarDetails"></p>
+            <button type="button" class=" btn btn-primary" onclick="mPrintEstado()">
+                <span class="glyphicon glyphicon-print"></span>
+
+                Imprimir Estado
+            </button>
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <h4>Cobros:</h4>
+    </div>
+
+
+    <div class="row" style="margin-top:5px;" id="divCobrosDetails">
+
+        <div class="row"> <div class="col-sm-3"> <label style="text-align:left; display: inline-block">aksjfalksdfj</label></div> <div class="col-sm-3"><p style=" display: inline-block">Monto total:$50.00</p></div><div class="col-sm-3"> <p style=" display: inline-block">Monto Restante: $0.00</p> </div> <div class="col-sm-3"><p class="btn-success" style="text-align:center">PAGADO</p></div> </div>
+
+        <div class="row">  <div class="col-sm-3"><p style=" display: inline-block">6/6/2021 10:12:20 AM</p></div><div class="col-sm-3"> <p style=" display: inline-block"> $0.00</p> </div> <div class="col-sm-3"><p class="btn-info" style="text-align:center">ABONO</p></div> </div>
+        <div class="row">  <div class="col-sm-3"><p style=" display: inline-block">6/6/2021 10:12:20 AM</p></div><div class="col-sm-3"> <p style=" display: inline-block"> $0.00</p> </div> <div class="col-sm-3"><p class="btn-info" style="text-align:center">ABONO</p></div> </div>
+
+        <hr>
+
+    </div>
+
+
+
+</div>
+<script>
+
+    function mLoadData() {
+        if (dataUser[0].userInfo.fkTypeUser != 1 && dataUser[0].userInfo.fkTypeUser != 2) {
+            document.getElementById("divSearchUser").setAttribute("style", "display:none");
+
+            mEstadoCuenta(dataUser[0].userInfo.pkUser, dataUser[0].userInfo.fullName, dataUser[0].userInfo.username);
+
+        } else {
+            document.getElementById("divSearchUser").setAttribute("style", "display:inline");
+
+        }
+
+
+    }
+
+    function mPrintEstado() {
+        var css = '@@page { size: landscape; }',
+            head = document.head || document.getElementsByTagName('head')[0],
+            style = document.createElement('style');
+
+        style.type = 'text/css';
+        style.media = 'print';
+
+        if (style.styleSheet) {
+            style.styleSheet.cssText = css;
+        } else {
+            style.appendChild(document.createTextNode(css));
+        }
+
+        head.appendChild(style);
+
+        window.print();
+    }
+
+    function mSearch() {
+        console.log(dataUser);
+        document.getElementById("divEstadoCuenta").setAttribute("style", "display:none");
+        var username = document.getElementById("txtUsername").value;
+        var id = document.getElementById("txtID").value;
+        var fullname = document.getElementById("txtFullname").value;
+        if (id == "")
+            id = 0;
+        document.getElementById("dtUsers").innerHTML = "";
+        if (username != "" || fullname != "" || id > 0) {
+            $.ajax({
+                type: 'POST',
+                data: {
+                    username: username,
+                    fullname: fullname,
+                    id: id
+                },
+                url: '../Users/searchUsers',
+                success: function (result) {
+                    var data = JSON.parse(result);
+
+
+                    if (data.length > 0) {
+                        document.getElementById("divTable").setAttribute("style", "margin-top:2%; display:inline");
+                        document.getElementById("divNotFound").setAttribute("style", "margin-top:2%; display:none");
+                        data.forEach(m => {
+
+                            document.getElementById("dtUsers").innerHTML +=
+                                "<tr><td>" + m.pkUser + "</td><td>" + m.fullname + "</td><td>" + m.username + "</td>" +
+                                "<td> <buttton class='btn btn-info' style='width:100%; border-radius:10px;' title='Ver Estado de cuenta' onclick='mEstadoCuenta(" + m.pkUser + ",\"" + m.fullname + "\",\"" + m.username + "\")'>Ver Estado de Cuenta</buttton></td>";
+
+
+                            +"</tr>"
+                        });
+                    } else {
+
+                        document.getElementById("divTable").setAttribute("style", "margin-top:2%; display:none");
+                        document.getElementById("divNotFound").setAttribute("style", "margin-top:2%; display:inline");
+
+                    }
+                }
+            }
+            );
+
+        } else {
+            document.getElementById("divTable").setAttribute("style", "margin-top:2%; display:none");
+            document.getElementById("divNotFound").setAttribute("style", "margin-top:2%; display:none");
+        }
+
+    }
+
+    function mGetCobrosByUser(idUser) {
+        divCobrosDetails
+        $.ajax({
+            type: 'POST',
+            data: {
+                idUser: idUser
+            },
+            url: '../Cobros/obtenerCobrosPorUsuario',
+            success: function (result) {
+                mGetAbonosByUser(idUser, JSON.parse(result));
+            }
+        });
+
+    }
+    function mEstadoCuenta(idUser, fullname, username) {
+        document.getElementById("fullnameDetails").innerHTML = fullname;
+        document.getElementById("idUserDetails").innerHTML = "<strong>ID:</strong> " + idUser;
+        document.getElementById("usernameDetails").innerHTML = "<strong>username:</strong> " + username;
+        document.getElementById("divCobrosDetails").innerHTML = "";
+
+        mGetCobrosByUser(idUser);
+        document.getElementById("divTable").setAttribute("style", "display:none");
+
+        document.getElementById("divEstadoCuenta").setAttribute("style", "display-inline");
+        document.getElementById("divNotFound").setAttribute("style", "margin-top:2%; display:none");
+
+
+    }
+
+
+
+
+    function mGetAbonosByUser(idUser, dataCobros) {
+        console.log(dataCobros);
+        $.ajax({
+            type: 'POST',
+            data: {
+                idUser: idUser
+
+            },
+            url: '../Abonos/obtenerAbonosByIdUser',
+            success: function (result) {
+                var dataAbonos = JSON.parse(result);
+                var totalPagar = 0;
+                for (i = 0; i < dataCobros.length; i++) {
+
+                    var cobro = dataCobros[i];
+
+                    totalPagar += parseFloat(cobro.montoRestante);
+
+                    var divContent = "<div class='row' > <div class='col-sm-3'> <label style='text-align:left; display: inline-block'>"
+                        + cobro.concepto +
+                        "</label></div> <div class='col-sm-3'><p style=' display: inline-block'>Monto total:$" +
+                        cobro.montoTotal
+                        + "</p></div> <div class='col-sm-3'> <p style=' display: inline-block'>Monto Restante: $"
+                        + cobro.montoRestante;
+
+                    divContent += (cobro.statusPago) ? "</p> </div> <div class='col-sm-3'><p class='btn-success' style='text-align:center'>PAGADO" : "</p> </div> <div class='col-sm-3'><p class='btn-danger' style='text-align:center'>PENDIENTE DE PAGO";
+
+
+                    divContent += "</p></div></div >";
+
+                    for (j = 0; j < dataAbonos.length; j++) {
+                        var abono = dataAbonos[j];
+                        if (abono.fkCobro == cobro.pkCobro) {
+                            divContent += "<div class='row'>  <div class='col-sm-3'><p style=' display: inline-block'>" +
+                                abono.fechaAbono + "</p></div><div class='col-sm-3'> <p style=' display: inline-block'> $" +
+                                abono.montoAbono + "</p> </div> <div class='col-sm-3'><p class='btn-info' style='text-align:center'>ABONO</p></div> </div> ";
+
+
+                        }
+                    }
+
+                    divContent += "<hr>";
+                    document.getElementById("divCobrosDetails").innerHTML += divContent;
+
+                }
+
+
+                document.getElementById("totalPagarDetails").innerHTML = "<strong>Total a Pagar:</strong> $" + totalPagar;
+
+
+            }
+        });
+
+    }
+
+
+
+
+</script>

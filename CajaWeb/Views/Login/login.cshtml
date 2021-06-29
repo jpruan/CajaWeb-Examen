@@ -1,0 +1,58 @@
+﻿
+@{
+    ViewBag.Title = "login";
+    Layout = "";
+}
+<link href="~/Content/MyStyles.css" rel="stylesheet" />
+<div class="wrapper">
+    <div id="formContent">
+
+        <form>
+            <h2>Ingresa tu usuario</h2>
+            <input type="text" id="username" placeholder="username" autofocus>
+            <input type="password" id="password" placeholder="password" onkeyup="if (event.keyCode == 13) {mMakeLogin()}">
+            <input type="button" value="Log In" onclick="mMakeLogin()">
+
+            <p id="error" style="color:red"></p>
+        </form>
+
+    </div>
+</div>
+<script>
+
+
+
+
+    function mMakeLogin() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+        $.ajax({
+            type: "POST",
+            data: {
+                username: username,
+                password: password
+            },
+            url: "../Login/makelogin",
+            success: function (result) {
+                var response = JSON.parse(result);
+                
+                if (response[0].loginSuccess) {
+                    window.location.href = "../Home/Index";
+                } else {
+                    document.getElementById("error").innerHTML="Nombre de usuario o password invalido.";
+
+                }
+            }
+        });
+
+
+
+
+
+
+    }
+
+
+
+</script>
+@Scripts.Render("~/bundles/jquery")

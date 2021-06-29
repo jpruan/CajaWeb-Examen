@@ -1,0 +1,420 @@
+﻿
+@{
+    ViewBag.Title = "usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!-- CONTENT -->
+    <div class="row" style="margin-bottom: 40px; margin-top: 2%;">
+        <div class="col-sm-12 clearfix">
+            <div class="panel panel-default mbottom-10">
+                <div class="panel-heading uppercase text-bold clearfix">
+                    <p class="mbottom-0" style="text-align: center">Administración de usuarios</p>
+                </div>
+             
+
+                    <div class="modal" id="myModal" style="margin-top: 7%;"
+                         align="center">
+                        <div class="modal-lg">
+
+                            <div class="modal-content animate" style="width: 100%;">
+                                <div class="modal-header" style="height: 30px;" id="modalHeader">
+                                    <label style="font-size: 14px; color: white;" class="uppercase">
+                                    
+                                    </label> <span class="glyphicon glyphicon-remove zoom pull-right"
+                                                   style="right: 8px; top: 2px; color: white; font-size: 17px; text-align: right;"
+                                                   onclick="mCloseModal()"></span>
+                                </div>
+                                <div class="modal-body mtop-10"style="margin-bottom:4%">
+                                    <div class="row " style="margin-bottom:2%">
+                                        <div class="col-xs-3 col-xs-offset-1" style="text-align:right">
+                                            <label style="font-size: 9pt; ">
+                                                Nombre Completo:
+                                            </label>
+                                        </div>
+                                           
+                                        <div class="col-sm-4">
+
+                                            <input id="txtNombre" type="text" class="form-control"
+                                                   placeholder="Ingresa el Nombre del Usuario">
+                                        </div>
+                                    </div>
+                                    <div class="row " style="margin-bottom:2%">
+                                        <div class="col-xs-3 col-xs-offset-1" style="text-align:right">
+                                            <label style="font-size: 9pt; ">
+                                                Username:
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-4">
+
+                                            <input id="txtUsername" type="text" class="form-control"
+                                                   placeholder="Ingresa el Username">
+                                        </div>
+                                    </div>
+                                    <div class="row " style="margin-bottom:2%">
+                                        <div class="col-xs-3 col-xs-offset-1" style="text-align:right">
+                                            <label style="font-size: 9pt; ">
+                                                Password:
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-4">
+
+                                            <input id="txtPassword" type="password" class="form-control"
+                                                   placeholder="Ingresa el Password" onkeyup="mValidatePassword();">
+                                        </div>
+                                    </div>
+                                    <div class="row " style="margin-bottom:2%">
+                                        <div class="col-xs-3 col-xs-offset-1" style="text-align:right">
+                                            <label style="font-size: 9pt;">
+                                                Confirmar Password:
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-4">
+
+                                            <input id="txtPasswordConfirm" type="password" class="form-control"
+                                                   placeholder="Confirma el Password" onkeyup="mValidatePassword();">
+                                        </div>
+                                    </div>
+
+                                    <div class="row " style="margin-bottom:2%">
+                                        <div class="col-xs-3 col-xs-offset-1" style="text-align:right">
+                                            <label style="font-size: 9pt;">
+                                                Selecciona el Tipo de Usuario:
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <select name="slTypeUser" id="slTypeUser" class="form-control">
+                                                <option value="0">Selecciona Tipo Usuario</option>
+                                                <option value="1">Administrador</option>
+                                                <option value="2">Cajero</option>
+                                                <option value="3">Cliente</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row col-sm-6 col-sm-offset-3">
+                                        <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove"></span> Cancelar
+                                        </button>
+                                        <button id="btnEditPassword" onclick="editPass()"
+                                                value="0" type="button" class="btn btn-secondary">
+                                            <span class="glyphicon glyphicon-asterisk"></span>
+                                            Editar Password
+                                        </button>
+
+
+                                        <button id="btnGuardarCambios" onclick="GuardarCambios()"
+                                                value="0" type="button" class="btn btn-primary">
+                                            <span class="glyphicon glyphicon-floppy-saved"></span>
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top:2%">
+
+                        <button onclick="mShowModalAgregar()" type="button"
+                                class="btn btn-success" style="border-radius:10px;">
+                            <span class="glyphicon glyphicon-plus"></span> Agregar Nuevo Usuario
+                        </button>
+
+                    </div>
+
+                    <br>
+                    <table id="dtUsers"
+                           class="table table-striped table-bordered table-sm "
+                           cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Id:</th>
+                                <th>Nombre :</th>
+                                <th>Username:</th>
+                                <th>Tipo de usuario:</th>
+                                <th>Acciones:</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodytabla"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+  
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        ActualizarTabla();
+
+    });
+    var isEditPass = false;
+    var passwordsEquals = false;
+
+    function ActualizarTabla() {
+        $.ajax({
+            type: 'POST',
+            data: {
+        
+            },
+            url: '../Users/getAllUsers',
+            success: function (result) {
+                var data = JSON.parse(result);
+                console.log(data);
+
+                var datatableVariable = $('#dtUsers').DataTable({
+                    data: data,
+                     
+
+                    columns: [
+                        { 'data': 'pkUser' },
+                        { 'data': 'fullname' },
+                        { 'data': 'username' },
+                        { 'data': 'typeUser' },
+                        {
+                            'data': 'pkUser',
+                            render: function (data) {
+                                return "<buttton class='btn btn-info' style='width:50%; border-radius:2px;' title='Editar usuario' onclick='mShowModalEditar(" + data + ")'><span class='glyphicon glyphicon-edit'></span></buttton>" +
+                                    "<buttton class='btn btn-danger' style='width:50%; border-radius:2px;' title='Eliminar usuario' onclick='deleteUser(" + data + ")'><span class='glyphicon glyphicon-trash'></span></buttton>";
+                            }
+                        }
+
+                    ], dom: 'lfBtip',
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                    destroy: true
+                });
+
+            }
+        }
+        );
+    }
+
+    function editPass() {
+        isEditPass = true;
+        document.getElementById("txtPassword").disabled = false;
+        document.getElementById("txtPasswordConfirm").disabled = false;
+        document.getElementById("txtPassword").value = "";
+        document.getElementById("txtPasswordConfirm").value = ""
+
+    }
+
+    function mShowModalEditar(idUser) {
+        passwordsEquals = false;
+        document.getElementById("modalHeader").setAttribute("style", "background-color:#A0E7E5");
+        document.getElementById("btnGuardarCambios").setAttribute("class", "btn btn-info");
+        document.getElementById("modalHeader").innerHTML = "EDITAR USUARIO";
+        document.getElementById("btnGuardarCambios").value = idUser;
+        isEditPass = false;
+
+        $.ajax({
+                type: 'POST',
+                data: {
+                   
+                    id: idUser
+                },
+                url: '../Users/getUserById',
+                success: function (JSONresult) {
+                    var json = JSON.parse(JSONresult);
+                    console.log(json);
+                    document.getElementById("txtNombre").value = json[0].fullname;
+                    document.getElementById("txtUsername").value = json[0].username;
+                    document.getElementById("txtPassword").disabled = true;
+                    document.getElementById("txtPasswordConfirm").disabled = true;
+                    document.getElementById("txtPassword").value = "********";
+                    document.getElementById("txtPasswordConfirm").value ="********"
+                    document.getElementById("slTypeUser").value = json[0].typeUser;
+
+                    document.getElementById("btnEditPassword").setAttribute("style", "display:inline-block");
+
+                }
+            });
+
+
+
+        
+
+
+
+        $('#myModal').modal('show');
+
+    }
+
+
+    function mValidatePassword() {
+        var pass1=document.getElementById("txtPassword").value;
+        var pass2 = document.getElementById("txtPasswordConfirm").value;
+
+
+        if (pass1 != "" && pass2 != "") {
+            if (pass1 != pass2) {
+                document.getElementById("txtPassword").setAttribute("style", "background-color:#efbac4");
+                document.getElementById("txtPasswordConfirm").setAttribute("style", "background-color:#efbac4");
+                passwordsEquals = false;
+            } else {
+                passwordsEquals = true;
+                document.getElementById("txtPassword").setAttribute("style", "background-color:#B4F8C8");
+                document.getElementById("txtPasswordConfirm").setAttribute("style", "background-color:#B4F8C8");
+
+            }
+        } else {
+            passwordsEquals = true;
+            document.getElementById("txtPassword").setAttribute("style", "background-color:#FFFFFF");
+            document.getElementById("txtPasswordConfirm").setAttribute("style", "background-color:#FFFFFF");
+
+        }
+
+    }
+
+    
+
+    function mShowModalAgregar() {
+        passwordsEquals = false;
+        document.getElementById("modalHeader").setAttribute("style", "background-color:#B4F8C8");
+        document.getElementById("btnGuardarCambios").setAttribute("class", "btn btn-success");
+
+        document.getElementById("modalHeader").innerHTML="AGREGAR USUARIO";
+        document.getElementById("btnGuardarCambios").value = 0;
+
+        document.getElementById("txtNombre").value = "";
+        document.getElementById("txtUsername").value = "";     
+        document.getElementById("txtPassword").value = "";
+        document.getElementById("txtPasswordConfirm").value = "";
+        document.getElementById("slTypeUser").value = "0";
+        document.getElementById("txtPassword").disabled = false;
+        document.getElementById("txtPasswordConfirm").disabled = false;
+        
+        document.getElementById("btnEditPassword").setAttribute("style", "display:none");
+
+
+        $('#myModal').modal('show');
+   
+    }
+
+    function mCloseModal() {
+
+        $('#myModal').modal('hide');
+    }
+
+    function GuardarCambios() {
+
+        mValidatePassword();
+
+        var fullName = document.getElementById("txtNombre").value.trim();
+        var username = document.getElementById("txtUsername").value.trim();
+        var pass = document.getElementById("txtPassword").value.trim();
+        var passConfirm = document.getElementById("txtPasswordConfirm").value.trim();
+        var typeUser = document.getElementById("slTypeUser").value.trim();
+        
+        var id = document.getElementById("btnGuardarCambios").value;
+    
+        if (typeUser != "0") {
+            if (username != "" && fullName != "" && pass != "" && passConfirm != "") {
+
+                if (passwordsEquals) {
+
+                    var url = (id > 0) ? "../Users/Edit" : "../Users/Add";
+                    console.log(url);
+
+
+                    $.ajax({
+                        type: 'POST',
+                        data: {
+                            fullname: fullName,
+                            username: username,
+                            password: pass,
+                            typeuser: typeUser,
+                            iseditpass: isEditPass,
+                            id: id
+                        },
+                        url: url,
+                        success: function (result) {
+                            if (result.includes("Error")) {
+                                new PNotify({
+                                    title: 'Error!',
+                                    text: result,
+                                    type: 'error'
+                                });
+
+                            } else {
+                                new PNotify({
+                                    title: 'Done!',
+                                    text: result,
+                                    type: 'success'
+                                });
+                                ActualizarTabla();
+                                mCloseModal();
+                            }
+
+
+                        }
+                    });
+                } else {
+
+                    new PNotify({
+                        title: 'Error!',
+                        text: "El password no coincide.",
+                        type: 'error'
+                    });
+
+
+
+                }
+            } else {
+                new PNotify({
+                    title: 'Error!',
+                    text: "Debes llenar todos los campos",
+                    type: 'error'
+                });
+           
+            }
+        } else {
+
+            new PNotify({
+                title: 'Error!',
+                text: "Debes seleccionar un tipo de usuario",
+                type: 'error'
+            });
+
+
+     
+
+        }
+       
+    }
+
+    function deleteUser(id) {
+      alertify.confirm("Eliminar",
+            "Si eliminas este usuario, se eliminaran todos los cobros y pagos asociados a el. Estas seguro que deseas eliminar este registro?",
+            function () {
+            
+                $.ajax({
+                    type: 'POST',
+                    data: {
+                  
+                        id: id
+                    },
+                    url: '../Users/Delete',
+                    success: function (result) {
+                        new PNotify({
+                            title: 'Done!',
+                            text: 'Registro Eliminado',
+                            type: 'info'
+                        });
+
+                        ActualizarTabla();
+
+                    }
+        });
+        
+
+            }, function () {
+            });
+
+    }
+
+</script>
+
